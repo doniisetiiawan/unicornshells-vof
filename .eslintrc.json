@@ -21,6 +21,7 @@
     "no-underscore-dangle": "off",
     "no-param-reassign": "off",
     "consistent-return": "off",
+    "array-callback-return": "off",
     "react/jsx-one-expression-per-line": "off"
   }
 }
