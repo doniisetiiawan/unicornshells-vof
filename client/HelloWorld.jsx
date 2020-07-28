@@ -9,4 +9,4 @@ function HelloWorld() {
   );
 }
 
-export default hot(HelloWorld);
+export default hot(module)(HelloWorld);
