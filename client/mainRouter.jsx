@@ -9,23 +9,34 @@ import PrivateRoute from './auth/PrivateRoute';
 import EditProfile from './user/editProfile';
 import Menu from './core/menu';
 
-function MainRouter() {
-  return (
-    <>
-      <Menu />
-      <Switch>
-        <Route exact path="/" component={Home} />
-        <Route path="/users" component={Users} />
-        <Route path="/signup" component={Signup} />
-        <Route path="/signin" component={Signin} />
-        <PrivateRoute
-          path="/user/edit/:userId"
-          component={EditProfile}
-        />
-        <Route path="/user/:userId" component={Profile} />
-      </Switch>
-    </>
-  );
+class MainRouter extends React.Component {
+  componentDidMount = () => {
+    const jssStyles = document.getElementById(
+      'jss-server-side',
+    );
+    if (jssStyles && jssStyles.parentNode) {
+      jssStyles.parentNode.removeChild(jssStyles);
+    }
+  };
+
+  render() {
+    return (
+      <>
+        <Menu />
+        <Switch>
+          <Route exact path="/" component={Home} />
+          <Route path="/users" component={Users} />
+          <Route path="/signup" component={Signup} />
+          <Route path="/signin" component={Signin} />
+          <PrivateRoute
+            path="/user/edit/:userId"
+            component={EditProfile}
+          />
+          <Route path="/user/:userId" component={Profile} />
+        </Switch>
+      </>
+    );
+  }
 }
 
 export default MainRouter;
