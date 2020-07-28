@@ -57,7 +57,7 @@ class Users extends Component {
           <List dense>
             {this.state.users.map((item, i) => (
               <Link to={`/user/${item._id}`} key={i}>
-                <ListItem button="button">
+                <ListItem>
                   <ListItemAvatar>
                     <Avatar>
                       <Person />

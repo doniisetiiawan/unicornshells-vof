@@ -1,6 +1,10 @@
 /* eslint-disable react/prop-types */
 import React, { Component } from 'react';
-import { Link, Redirect } from 'react-router-dom';
+import {
+  Link,
+  Redirect,
+  withRouter,
+} from 'react-router-dom';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
@@ -15,6 +19,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { withStyles } from '@material-ui/core/styles';
 import auth from '../auth/auth-helper';
 import { read } from './api-user';
+import DeleteUser from './deleteUser';
 
 const styles = (theme) => ({
   root: theme.mixins.gutters({
@@ -53,7 +58,7 @@ class Profile extends Component {
   };
 
   componentDidMount = () => {
-    this.init(this.match.params.userId);
+    this.init(this.props.match.params.userId);
   };
 
   render() {
@@ -95,9 +100,11 @@ class Profile extends Component {
                         <Edit />
                       </IconButton>
                     </Link>
+                    <DeleteUser
+                      userId={this.state.user._id}
+                    />
                   </ListItemSecondaryAction>
               )}
-
             </ListItem>
             <Divider />
             <ListItem>
@@ -114,4 +121,4 @@ class Profile extends Component {
   }
 }
 
-export default withStyles(styles)(Profile);
+export default withStyles(styles)(withRouter(Profile));

@@ -1,6 +1,6 @@
 /* eslint-disable react/prop-types */
 import React, { Component } from 'react';
-import { Redirect } from 'react-router-dom';
+import { Redirect, withRouter } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
@@ -55,7 +55,7 @@ class EditProfile extends Component {
     const jwt = auth.isAuthenticated();
     read(
       {
-        userId: this.match.params.userId,
+        userId: this.props.match.params.userId,
       },
       { t: jwt.token },
     ).then((data) => {
@@ -79,7 +79,7 @@ class EditProfile extends Component {
     };
     update(
       {
-        userId: this.match.params.userId,
+        userId: this.props.match.params.userId,
       },
       {
         t: jwt.token,
@@ -162,7 +162,7 @@ class EditProfile extends Component {
           <CardActions>
             <Button
               color="primary"
-              variant="raised"
+              variant="contained"
               onClick={this.clickSubmit}
               className={classes.submit}
             >
@@ -175,4 +175,4 @@ class EditProfile extends Component {
   }
 }
 
-export default withStyles(styles)(EditProfile);
+export default withStyles(styles)(withRouter(EditProfile));
