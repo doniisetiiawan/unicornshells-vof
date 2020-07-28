@@ -21,6 +21,7 @@
     "eslint-plugin-jsx-a11y": "^6.3.0",
     "eslint-plugin-react": "^7.20.0",
     "eslint-plugin-react-hooks": "^4",
+    "file-loader": "^6.0.0",
     "nodemon": "^2.0.4",
     "prettier": "^2.0.5",
     "webpack": "^4.44.0",
@@ -31,6 +32,8 @@
   },
   "dependencies": {
     "@hot-loader/react-dom": "^16.13.0",
+    "@material-ui/core": "^4.11.0",
+    "@material-ui/icons": "^4.9.1",
     "body-parser": "^1.19.0",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",
@@ -42,8 +45,10 @@
     "lodash": "^4.17.19",
     "mongodb": "^3.5.9",
     "mongoose": "^5.9.26",
+    "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "react-hot-loader": "^4.12.21"
+    "react-hot-loader": "^4.12.21",
+    "react-router-dom": "^5.2.0"
   }
 }

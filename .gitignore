@@ -24,3 +24,5 @@ chrome-user-data
 *.swo
 
 dist/
+
+client/a.js
