@@ -86,6 +86,17 @@ const unfollow = (params, credentials, unfollowId) => fetch('/api/users/unfollow
     console.log(err);
   });
 
+const findPeople = (params, credentials) => fetch(`/api/users/findpeople/${params.userId}`, {
+  method: 'GET',
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${credentials.t}`,
+  },
+})
+  .then((response) => response.json())
+  .catch((err) => console.log(err));
+
 export {
   create,
   list,
@@ -93,5 +104,5 @@ export {
   update,
   remove,
   follow,
-  unfollow,
+  unfollow, findPeople,
 };
