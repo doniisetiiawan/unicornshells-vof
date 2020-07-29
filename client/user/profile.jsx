@@ -21,6 +21,7 @@ import auth from '../auth/auth-helper';
 import { read } from './api-user';
 import DeleteUser from './deleteUser';
 import FollowProfileButton from './followProfileButton';
+import ProfileTabs from './profileTabs';
 
 const styles = (theme) => ({
   root: theme.mixins.gutters({
@@ -161,6 +162,7 @@ class Profile extends Component {
               />
             </ListItem>
           </List>
+          <ProfileTabs user={this.state.user} />
         </Paper>
       </>
     );
