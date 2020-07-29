@@ -4,10 +4,10 @@ import CardHeader from '@material-ui/core/CardHeader';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
 import {
+  Comment as CommentIcon,
   Delete as DeleteIcon,
   Favorite as FavoriteIcon,
   FavoriteBorder as FavoriteBorderIcon,
-  Comment as CommentIcon,
 } from '@material-ui/icons';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
@@ -17,7 +17,7 @@ import CardActions from '@material-ui/core/CardActions';
 import Divider from '@material-ui/core/Divider';
 import Card from '@material-ui/core/Card';
 import auth from '../auth/auth-helper';
-import { remove } from './api-post';
+import { like, remove, unlike } from './api-post';
 
 const styles = (theme) => ({
   card: {
@@ -60,6 +60,51 @@ class Post extends Component {
       comments: [],
     };
   }
+
+  componentDidMount = () => {
+    this.setState({
+      like: this.checkLike(this.props.post.likes),
+      likes: this.props.post.likes.length,
+      comments: this.props.post.comments,
+    });
+  };
+
+  // eslint-disable-next-line camelcase
+  UNSAFE_componentWillReceiveProps = (props) => {
+    this.setState({
+      like: this.checkLike(props.post.likes),
+      likes: props.post.likes.length,
+      comments: props.post.comments,
+    });
+  };
+
+  checkLike = (likes) => {
+    const jwt = auth.isAuthenticated();
+    return likes.indexOf(jwt.user._id) !== -1;
+  };
+
+  like = () => {
+    const callApi = this.state.like ? unlike : like;
+    const jwt = auth.isAuthenticated();
+    callApi(
+      {
+        userId: jwt.user._id,
+      },
+      {
+        t: jwt.token,
+      },
+      this.props.post._id,
+    ).then((data) => {
+      if (data.error) {
+        console.log(data.error);
+      } else {
+        this.setState({
+          like: !this.state.like,
+          likes: data.likes.length,
+        });
+      }
+    });
+  };
 
   deletePost = () => {
     const jwt = auth.isAuthenticated();

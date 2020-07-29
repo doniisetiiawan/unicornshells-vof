@@ -94,6 +94,36 @@ const photo = (req, res) => {
   return res.send(req.post.photo.data);
 };
 
+const like = (req, res) => {
+  Post.findByIdAndUpdate(
+    req.body.postId,
+    { $push: { likes: req.body.userId } },
+    { new: true },
+  ).exec((err, result) => {
+    if (err) {
+      return res.status(400).json({
+        error: errorHandler.getErrorMessage(err),
+      });
+    }
+    res.json(result);
+  });
+};
+
+const unlike = (req, res) => {
+  Post.findByIdAndUpdate(
+    req.body.postId,
+    { $pull: { likes: req.body.userId } },
+    { new: true },
+  ).exec((err, result) => {
+    if (err) {
+      return res.status(400).json({
+        error: errorHandler.getErrorMessage(err),
+      });
+    }
+    res.json(result);
+  });
+};
+
 const isPoster = (req, res, next) => {
   const isPoster = req.post
     && req.auth
@@ -114,4 +144,6 @@ export default {
   postByID,
   isPoster,
   remove,
+  like,
+  unlike,
 };
