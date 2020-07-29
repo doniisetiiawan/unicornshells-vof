@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types,react/no-access-state-in-setstate */
 import React, { Component } from 'react';
 import CardHeader from '@material-ui/core/CardHeader';
 import Avatar from '@material-ui/core/Avatar';
@@ -18,6 +18,7 @@ import Divider from '@material-ui/core/Divider';
 import Card from '@material-ui/core/Card';
 import auth from '../auth/auth-helper';
 import { like, remove, unlike } from './api-post';
+import Comments from './comments';
 
 const styles = (theme) => ({
   card: {
@@ -104,6 +105,10 @@ class Post extends Component {
         });
       }
     });
+  };
+
+  updateComments = (comments) => {
+    this.setState({ comments });
   };
 
   deletePost = () => {
@@ -203,11 +208,11 @@ class Post extends Component {
           <span>{this.state.comments.length}</span>
         </CardActions>
         <Divider />
-        {/* <Comments */}
-        {/*  postId={this.props.post._id} */}
-        {/*  comments={this.state.comments} */}
-        {/*  updateComments={this.updateComments} */}
-        {/* /> */}
+        <Comments
+          postId={this.props.post._id}
+          comments={this.state.comments}
+          updateComments={this.updateComments}
+        />
       </Card>
     );
   }

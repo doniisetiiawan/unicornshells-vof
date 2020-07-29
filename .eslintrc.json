@@ -23,6 +23,7 @@
     "consistent-return": "off",
     "array-callback-return": "off",
     "no-shadow": "off",
+    "eqeqeq": "off",
     "react/jsx-one-expression-per-line": "off"
   }
 }

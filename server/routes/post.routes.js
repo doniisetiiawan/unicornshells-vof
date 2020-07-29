@@ -29,6 +29,13 @@ router
   .put(authCtrl.requireSignin, postCtrl.unlike);
 
 router
+  .route('/api/posts/comment')
+  .put(authCtrl.requireSignin, postCtrl.comment);
+router
+  .route('/api/posts/uncomment')
+  .put(authCtrl.requireSignin, postCtrl.uncomment);
+
+router
   .route('/api/posts/:postId')
   .delete(
     authCtrl.requireSignin,

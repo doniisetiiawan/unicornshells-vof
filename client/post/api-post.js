@@ -77,6 +77,42 @@ const unlike = (params, credentials, postId) => fetch('/api/posts/unlike/', {
     console.log(err);
   });
 
+const comment = (params, credentials, postId, comment) => fetch('/api/posts/comment/', {
+  method: 'PUT',
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${credentials.t}`,
+  },
+  body: JSON.stringify({
+    userId: params.userId,
+    postId,
+    comment,
+  }),
+})
+  .then((response) => response.json())
+  .catch((err) => {
+    console.log(err);
+  });
+
+const uncomment = (params, credentials, postId, comment) => fetch('/api/posts/uncomment/', {
+  method: 'PUT',
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${credentials.t}`,
+  },
+  body: JSON.stringify({
+    userId: params.userId,
+    postId,
+    comment,
+  }),
+})
+  .then((response) => response.json())
+  .catch((err) => {
+    console.log(err);
+  });
+
 export {
   listNewsFeed,
   listByUser,
@@ -84,4 +120,6 @@ export {
   remove,
   like,
   unlike,
+  comment,
+  uncomment,
 };
