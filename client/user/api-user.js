@@ -30,10 +30,9 @@ const update = (params, credentials, user) => fetch(`/api/users/${params.userId}
   method: 'PUT',
   headers: {
     Accept: 'application/json',
-    'Content-Type': 'application/json',
     Authorization: `Bearer ${credentials.t}`,
   },
-  body: JSON.stringify(user),
+  body: user,
 })
   .then((response) => response.json())
   .catch((err) => {

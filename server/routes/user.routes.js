@@ -10,6 +10,13 @@ router
   .post(userCtrl.create);
 
 router
+  .route('/api/users/photo/:userId')
+  .get(userCtrl.photo, userCtrl.defaultPhoto);
+router
+  .route('/api/users/defaultphoto')
+  .get(userCtrl.defaultPhoto);
+
+router
   .route('/api/users/:userId')
   .get(authCtrl.requireSignin, userCtrl.read)
   .put(

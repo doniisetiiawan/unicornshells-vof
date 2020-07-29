@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types,jsx-a11y/label-has-associated-control */
 import React, { Component } from 'react';
 import { Redirect, withRouter } from 'react-router-dom';
 import Card from '@material-ui/core/Card';
@@ -9,8 +9,9 @@ import Icon from '@material-ui/core/Icon';
 import CardActions from '@material-ui/core/CardActions';
 import Button from '@material-ui/core/Button';
 import { withStyles } from '@material-ui/core/styles';
+import { AttachFile as FileUpload } from '@material-ui/icons';
 import auth from '../auth/auth-helper';
-import { update, read } from './api-user';
+import { read, update } from './api-user';
 
 const styles = (theme) => ({
   card: {
@@ -48,10 +49,13 @@ class EditProfile extends Component {
       password: '',
       redirectToProfile: false,
       error: '',
+      about: '',
+      photo: '',
     };
   }
 
   componentDidMount = () => {
+    this.userData = new FormData();
     const jwt = auth.isAuthenticated();
     read(
       {
@@ -65,6 +69,7 @@ class EditProfile extends Component {
         this.setState({
           name: data.name,
           email: data.email,
+          about: data.about,
         });
       }
     });
@@ -76,6 +81,7 @@ class EditProfile extends Component {
       name: this.state.name || undefined,
       email: this.state.email || undefined,
       password: this.state.password || undefined,
+      about: this.state.about || undefined,
     };
     update(
       {
@@ -84,7 +90,7 @@ class EditProfile extends Component {
       {
         t: jwt.token,
       },
-      user,
+      this.userData,
     ).then((data) => {
       if (data.error) {
         this.setState({ error: data.error });
@@ -98,7 +104,11 @@ class EditProfile extends Component {
   };
 
   handleChange = (name) => (event) => {
-    this.setState({ [name]: event.target.value });
+    const value = name === 'photo'
+      ? event.target.files[0]
+      : event.target.value;
+    this.userData.set(name, value);
+    this.setState({ [name]: value });
   };
 
   render() {
@@ -118,6 +128,28 @@ class EditProfile extends Component {
             >
               Edit Profile
             </Typography>
+            <input
+              accept="image/*"
+              type="file"
+              onChange={this.handleChange('photo')}
+              style={{ display: 'none' }}
+              id="icon-button-file"
+            />
+            <label htmlFor="icon-button-file">
+              <Button
+                variant="contained"
+                color="default"
+                component="span"
+              >
+                Upload <FileUpload />
+              </Button>
+            </label>
+            <span className={classes.filename}>
+              {this.state.photo
+                ? this.state.photo.name
+                : ''}
+            </span>
+            <br />
             <TextField
               id="name"
               label="Name"
@@ -125,6 +157,16 @@ class EditProfile extends Component {
               value={this.state.name}
               onChange={this.handleChange('name')}
               margin="normal"
+            />
+            <br />
+            <TextField
+              id="multiline-flexible"
+              label="About"
+              multiline
+              rows="2"
+              className={classes.textField}
+              value={this.state.about}
+              onChange={this.handleChange('about')}
             />
             <br />
             <TextField
@@ -146,7 +188,7 @@ class EditProfile extends Component {
               onChange={this.handleChange('password')}
               margin="normal"
             />
-            <br />{' '}
+            <br />
             {this.state.error && (
               <Typography component="p" color="error">
                 <Icon
