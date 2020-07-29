@@ -1,4 +1,4 @@
-/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types,react/no-access-state-in-setstate */
 import React, { Component } from 'react';
 import {
   Link,
@@ -11,7 +11,7 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemAvatar from '@material-ui/core/ListItemAvatar';
 import Avatar from '@material-ui/core/Avatar';
-import { Person, Edit } from '@material-ui/icons';
+import { Edit } from '@material-ui/icons';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
@@ -20,6 +20,7 @@ import { withStyles } from '@material-ui/core/styles';
 import auth from '../auth/auth-helper';
 import { read } from './api-user';
 import DeleteUser from './deleteUser';
+import FollowProfileButton from './followProfileButton';
 
 const styles = (theme) => ({
   root: theme.mixins.gutters({
@@ -41,6 +42,7 @@ class Profile extends Component {
     this.state = {
       user: '',
       redirectToSignin: false,
+      following: false,
     };
   }
 
@@ -48,7 +50,10 @@ class Profile extends Component {
     const jwt = auth.isAuthenticated();
     read({ userId }, { t: jwt.token }).then((data) => {
       if (data.error) this.setState({ redirectToSignin: true });
-      else this.setState({ user: data });
+      else {
+        const following = this.checkFollow(data);
+        this.setState({ user: data, following });
+      }
     });
   };
 
@@ -59,6 +64,35 @@ class Profile extends Component {
 
   componentDidMount = () => {
     this.init(this.props.match.params.userId);
+  };
+
+  checkFollow = (user) => {
+    const jwt = auth.isAuthenticated();
+    return user.followers.find(
+      (follower) => follower._id == jwt.user._id,
+    );
+  };
+
+  clickFollowButton = (callApi) => {
+    const jwt = auth.isAuthenticated();
+    callApi(
+      {
+        userId: jwt.user._id,
+      },
+      {
+        t: jwt.token,
+      },
+      this.state.user._id,
+    ).then((data) => {
+      if (data.error) {
+        this.setState({ error: data.error });
+      } else {
+        this.setState({
+          user: data,
+          following: !this.state.following,
+        });
+      }
+    });
   };
 
   render() {
@@ -93,13 +127,16 @@ class Profile extends Component {
               />
 
               {auth.isAuthenticated().user
-                && auth.isAuthenticated().user._id
-                  === this.state.user._id && (
+              && auth.isAuthenticated().user._id
+                === this.state.user._id ? (
                   <ListItemSecondaryAction>
                     <Link
                       to={`/user/edit/${this.state.user._id}`}
                     >
-                      <IconButton color="primary">
+                      <IconButton
+                        aria-label="Edit"
+                        color="primary"
+                      >
                         <Edit />
                       </IconButton>
                     </Link>
@@ -107,7 +144,12 @@ class Profile extends Component {
                       userId={this.state.user._id}
                     />
                   </ListItemSecondaryAction>
-              )}
+                ) : (
+                  <FollowProfileButton
+                    following={this.state.following}
+                    onButtonClick={this.clickFollowButton}
+                  />
+                )}
             </ListItem>
             <Divider />
             <ListItem>

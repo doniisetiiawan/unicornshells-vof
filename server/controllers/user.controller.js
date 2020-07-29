@@ -20,15 +20,18 @@ const create = (req, res) => {
 };
 
 const userByID = (req, res, next, id) => {
-  User.findById(id).exec((err, user) => {
-    if (err || !user) {
-      return res.status('400').json({
-        error: 'User not found',
-      });
-    }
-    req.profile = user;
-    next();
-  });
+  User.findById(id)
+    .populate('following', '_id name')
+    .populate('followers', '_id name')
+    .exec((err, user) => {
+      if (err || !user) {
+        return res.status('400').json({
+          error: 'User not found',
+        });
+      }
+      req.profile = user;
+      next();
+    });
 };
 
 const read = (req, res) => {
@@ -101,6 +104,76 @@ const photo = (req, res, next) => {
 
 const defaultPhoto = (req, res) => res.sendFile(process.cwd() + profileImage);
 
+const addFollowing = (req, res, next) => {
+  User.findByIdAndUpdate(
+    req.body.userId,
+    { $push: { following: req.body.followId } },
+    (err) => {
+      if (err) {
+        return res.status(400).json({
+          error: errorHandler.getErrorMessage(err),
+        });
+      }
+      next();
+    },
+  );
+};
+
+const addFollower = (req, res) => {
+  User.findByIdAndUpdate(
+    req.body.followId,
+    { $push: { followers: req.body.userId } },
+    { new: true },
+  )
+    .populate('following', '_id name')
+    .populate('followers', '_id name')
+    .exec((err, result) => {
+      if (err) {
+        return res.status(400).json({
+          error: errorHandler.getErrorMessage(err),
+        });
+      }
+      result.hashed_password = undefined;
+      result.salt = undefined;
+      res.json(result);
+    });
+};
+
+const removeFollowing = (req, res, next) => {
+  User.findByIdAndUpdate(
+    req.body.userId,
+    { $pull: { following: req.body.unfollowId } },
+    (err) => {
+      if (err) {
+        return res.status(400).json({
+          error: errorHandler.getErrorMessage(err),
+        });
+      }
+      next();
+    },
+  );
+};
+
+const removeFollower = (req, res) => {
+  User.findByIdAndUpdate(
+    req.body.unfollowId,
+    { $pull: { followers: req.body.userId } },
+    { new: true },
+  )
+    .populate('following', '_id name')
+    .populate('followers', '_id name')
+    .exec((err, result) => {
+      if (err) {
+        return res.status(400).json({
+          error: errorHandler.getErrorMessage(err),
+        });
+      }
+      result.hashed_password = undefined;
+      result.salt = undefined;
+      res.json(result);
+    });
+};
+
 export default {
   create,
   userByID,
@@ -110,4 +183,8 @@ export default {
   update,
   photo,
   defaultPhoto,
+  addFollowing,
+  addFollower,
+  removeFollowing,
+  removeFollower,
 };

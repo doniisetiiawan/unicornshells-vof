@@ -52,6 +52,46 @@ const remove = (params, credentials) => fetch(`/api/users/${params.userId}`, {
     console.log(err);
   });
 
+const follow = (params, credentials, followId) => fetch('/api/users/follow/', {
+  method: 'PUT',
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${credentials.t}`,
+  },
+  body: JSON.stringify({
+    userId: params.userId,
+    followId,
+  }),
+})
+  .then((response) => response.json())
+  .catch((err) => {
+    console.log(err);
+  });
+
+const unfollow = (params, credentials, unfollowId) => fetch('/api/users/unfollow/', {
+  method: 'PUT',
+  headers: {
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${credentials.t}`,
+  },
+  body: JSON.stringify({
+    userId: params.userId,
+    unfollowId,
+  }),
+})
+  .then((response) => response.json())
+  .catch((err) => {
+    console.log(err);
+  });
+
 export {
-  create, list, read, update, remove,
+  create,
+  list,
+  read,
+  update,
+  remove,
+  follow,
+  unfollow,
 };
