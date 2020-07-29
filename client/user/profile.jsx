@@ -22,6 +22,7 @@ import { read } from './api-user';
 import DeleteUser from './deleteUser';
 import FollowProfileButton from './followProfileButton';
 import ProfileTabs from './profileTabs';
+import { listByUser } from '../post/api-post';
 
 const styles = (theme) => ({
   root: theme.mixins.gutters({
@@ -33,6 +34,12 @@ const styles = (theme) => ({
   title: {
     margin: `${theme.spacing(3)}px 0 ${theme.spacing(2)}px`,
     color: theme.palette.protectedTitle,
+    fontSize: '1em',
+  },
+  bigAvatar: {
+    width: 60,
+    height: 60,
+    margin: 10,
   },
 });
 
@@ -44,6 +51,7 @@ class Profile extends Component {
       user: '',
       redirectToSignin: false,
       following: false,
+      posts: [],
     };
   }
 
@@ -54,6 +62,7 @@ class Profile extends Component {
       else {
         const following = this.checkFollow(data);
         this.setState({ user: data, following });
+        this.loadPosts(data._id);
       }
     });
   };
@@ -96,6 +105,31 @@ class Profile extends Component {
     });
   };
 
+  loadPosts = (user) => {
+    const jwt = auth.isAuthenticated();
+    listByUser(
+      {
+        userId: user,
+      },
+      {
+        t: jwt.token,
+      },
+    ).then((data) => {
+      if (data.error) {
+        console.log(data.error);
+      } else {
+        this.setState({ posts: data });
+      }
+    });
+  };
+
+  removePost = (post) => {
+    const updatedPosts = this.state.posts;
+    const index = updatedPosts.indexOf(post);
+    updatedPosts.splice(index, 1);
+    this.setState({ posts: updatedPosts });
+  }
+
   render() {
     const { classes } = this.props;
     const photoUrl = this.state.user._id
@@ -120,7 +154,10 @@ class Profile extends Component {
           <List dense>
             <ListItem>
               <ListItemAvatar>
-                <Avatar src={photoUrl} />
+                <Avatar
+                  src={photoUrl}
+                  className={classes.bigAvatar}
+                />
               </ListItemAvatar>
               <ListItemText
                 primary={this.state.user.name}
@@ -162,7 +199,11 @@ class Profile extends Component {
               />
             </ListItem>
           </List>
-          <ProfileTabs user={this.state.user} />
+          <ProfileTabs
+            user={this.state.user}
+            posts={this.state.posts}
+            removePostUpdate={this.removePost}
+          />
         </Paper>
       </>
     );

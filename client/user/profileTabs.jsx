@@ -5,6 +5,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 import TabContainer from './tabContainer';
 import FollowGrid from './followGrid';
+import PostList from '../post/postList';
 
 class ProfileTabs extends Component {
   constructor(props) {
@@ -40,6 +41,14 @@ class ProfileTabs extends Component {
             <Tab label="Followers" />
           </Tabs>
         </AppBar>
+        {this.state.tab === 0 && (
+          <TabContainer>
+            <PostList
+              removeUpdate={this.props.removePostUpdate}
+              posts={this.props.posts}
+            />
+          </TabContainer>
+        )}
         {this.state.tab === 1 && (
           <TabContainer>
             <FollowGrid

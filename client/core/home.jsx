@@ -9,6 +9,7 @@ import Grid from '@material-ui/core/Grid';
 import seashellImg from '../assets/images/seashell.jpg';
 import auth from '../auth/auth-helper';
 import FindPeople from '../user/findPeople';
+import Newsfeed from '../post/newsfeed';
 
 const styles = (theme) => ({
   root: {
@@ -91,7 +92,7 @@ class Home extends React.Component {
         {!this.state.defaultPage && (
           <Grid container spacing={1}>
             <Grid item xs={8} sm={7}>
-              {/* <Newsfeed/> */}
+              <Newsfeed />
             </Grid>
             <Grid item xs={6} sm={5}>
               <FindPeople />

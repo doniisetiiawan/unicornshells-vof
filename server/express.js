@@ -20,6 +20,7 @@ import React from 'react';
 import Template from '../template';
 import userRoutes from './routes/user.routes';
 import authRoutes from './routes/auth.routes';
+import postRoutes from './routes/post.routes';
 import MainRouter from '../client/mainRouter';
 
 // comment out before building for production
@@ -45,6 +46,7 @@ app.use(
 
 app.use('/', userRoutes);
 app.use('/', authRoutes);
+app.use('/', postRoutes);
 
 app.get('*', (req, res) => {
   const sheetsRegistry = new SheetsRegistry();
