@@ -1,26 +1,24 @@
-/* eslint-disable react/prop-types,react/no-access-state-in-setstate */
-import React, { Component } from 'react';
+/* eslint-disable jsx-a11y/alt-text,jsx-a11y/img-redundant-alt */
+import React, { useState } from 'react';
+import { makeStyles } from '@material-ui/styles';
+import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
-import {
-  Comment as CommentIcon,
-  Delete as DeleteIcon,
-  Favorite as FavoriteIcon,
-  FavoriteBorder as FavoriteBorderIcon,
-} from '@material-ui/icons';
 import { Link } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
 import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import CardActions from '@material-ui/core/CardActions';
 import Divider from '@material-ui/core/Divider';
-import Card from '@material-ui/core/Card';
-import auth from '../auth/auth-helper';
-import { like, remove, unlike } from './api-post';
+import DeleteIcon from '@material-ui/icons/Delete';
+import FavoriteIcon from '@material-ui/icons/Favorite';
+import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import CommentIcon from '@material-ui/icons/Comment';
 import Comments from './comments';
+import auth from '../auth/auth-helper';
+import { like, unlike, remove } from './api-post';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   card: {
     maxWidth: 600,
     margin: 'auto',
@@ -32,8 +30,8 @@ const styles = (theme) => ({
     padding: `${theme.spacing(2)}px 0px`,
   },
   cardHeader: {
-    paddingTop: theme.spacing(),
-    paddingBottom: theme.spacing(),
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(1),
   },
   text: {
     margin: theme.spacing(2),
@@ -41,52 +39,33 @@ const styles = (theme) => ({
   photo: {
     textAlign: 'center',
     backgroundColor: '#f2f5f4',
-    padding: theme.spacing(),
+    padding: theme.spacing(1),
   },
   media: {
     height: 200,
   },
   button: {
-    margin: theme.spacing(),
+    margin: theme.spacing(1),
   },
-});
+}));
 
-class Post extends Component {
-  constructor(props) {
-    super(props);
+function Post(props) {
+  const classes = useStyles();
+  const jwt = auth.isAuthenticated();
 
-    this.state = {
-      like: false,
-      likes: 0,
-      comments: [],
-    };
-  }
-
-  componentDidMount = () => {
-    this.setState({
-      like: this.checkLike(this.props.post.likes),
-      likes: this.props.post.likes.length,
-      comments: this.props.post.comments,
-    });
+  const checkLike = (likes) => {
+    const match = likes.indexOf(jwt.user._id) !== -1;
+    return match;
   };
 
-  // eslint-disable-next-line camelcase
-  UNSAFE_componentWillReceiveProps = (props) => {
-    this.setState({
-      like: this.checkLike(props.post.likes),
-      likes: props.post.likes.length,
-      comments: props.post.comments,
-    });
-  };
+  const [values, setValues] = useState({
+    like: checkLike(props.post.likes),
+    likes: props.post.likes.length,
+    comments: props.post.comments,
+  });
 
-  checkLike = (likes) => {
-    const jwt = auth.isAuthenticated();
-    return likes.indexOf(jwt.user._id) !== -1;
-  };
-
-  like = () => {
-    const callApi = this.state.like ? unlike : like;
-    const jwt = auth.isAuthenticated();
+  const clickLike = () => {
+    const callApi = values.like ? unlike : like;
     callApi(
       {
         userId: jwt.user._id,
@@ -94,28 +73,28 @@ class Post extends Component {
       {
         t: jwt.token,
       },
-      this.props.post._id,
+      props.post._id,
     ).then((data) => {
       if (data.error) {
         console.log(data.error);
       } else {
-        this.setState({
-          like: !this.state.like,
+        setValues({
+          ...values,
+          like: !values.like,
           likes: data.likes.length,
         });
       }
     });
   };
 
-  updateComments = (comments) => {
-    this.setState({ comments });
+  const updateComments = (comments) => {
+    setValues({ ...values, comments });
   };
 
-  deletePost = () => {
-    const jwt = auth.isAuthenticated();
+  const deletePost = () => {
     remove(
       {
-        postId: this.props.post._id,
+        postId: props.post._id,
       },
       {
         t: jwt.token,
@@ -124,98 +103,89 @@ class Post extends Component {
       if (data.error) {
         console.log(data.error);
       } else {
-        this.props.onRemove(this.props.post);
+        props.onRemove(props.post);
       }
     });
   };
 
-  render() {
-    const { classes } = this.props;
-
-    return (
-      <Card className={classes.card}>
-        <CardHeader
-          avatar={(
-            <Avatar
-              src={`/api/users/photo/${this.props.post.postedBy._id}`}
+  return (
+    <Card className={classes.card}>
+      <CardHeader
+        avatar={(
+          <Avatar
+            src={`/api/users/photo/${props.post.postedBy._id}`}
+          />
+        )}
+        action={
+          props.post.postedBy._id
+            === auth.isAuthenticated().user._id && (
+            <IconButton onClick={deletePost}>
+              <DeleteIcon />
+            </IconButton>
+          )
+        }
+        title={(
+          <Link to={`/user/${props.post.postedBy._id}`}>
+            {props.post.postedBy.name}
+          </Link>
+        )}
+        subheader={new Date(
+          props.post.created,
+        ).toDateString()}
+        className={classes.cardHeader}
+      />
+      <CardContent className={classes.cardContent}>
+        <Typography component="p" className={classes.text}>
+          {props.post.text}
+        </Typography>
+        {props.post.photo && (
+          <div className={classes.photo}>
+            <img
+              className={classes.media}
+              src={`/api/posts/photo/${props.post._id}`}
+              alt="photo"
             />
-          )}
-          action={
-            this.props.post.postedBy._id
-              === auth.isAuthenticated().user._id && (
-              <IconButton onClick={this.deletePost}>
-                <DeleteIcon />
-              </IconButton>
-            )
-          }
-          title={(
-            <Link
-              to={`/user/${this.props.post.postedBy._id}`}
-            >
-              {this.props.post.postedBy.name}
-            </Link>
-          )}
-          subheader={new Date(
-            this.props.post.created,
-          ).toDateString()}
-          className={classes.cardHeader}
-        />
-        <CardContent className={classes.cardContent}>
-          <Typography
-            component="p"
-            className={classes.text}
-          >
-            {this.props.post.text}
-          </Typography>
-          {this.props.post.photo && (
-            <div className={classes.photo}>
-              <img
-                className={classes.media}
-                src={`/api/posts/photo/${this.props.post._id}`}
-                alt="post"
-              />
-            </div>
-          )}
-        </CardContent>
-        <CardActions>
-          {this.state.like ? (
-            <IconButton
-              onClick={this.like}
-              className={classes.button}
-              aria-label="Like"
-              color="secondary"
-            >
-              <FavoriteIcon />
-            </IconButton>
-          ) : (
-            <IconButton
-              onClick={this.like}
-              className={classes.button}
-              aria-label="Unlike"
-              color="secondary"
-            >
-              <FavoriteBorderIcon />
-            </IconButton>
-          )}
-          <span> {this.state.likes} </span>
+          </div>
+        )}
+      </CardContent>
+      <CardActions>
+        {values.like ? (
           <IconButton
+            onClick={clickLike}
             className={classes.button}
-            aria-label="Comment"
+            aria-label="Like"
             color="secondary"
           >
-            <CommentIcon />
+            <FavoriteIcon />
           </IconButton>
-          <span>{this.state.comments.length}</span>
-        </CardActions>
-        <Divider />
-        <Comments
-          postId={this.props.post._id}
-          comments={this.state.comments}
-          updateComments={this.updateComments}
-        />
-      </Card>
-    );
-  }
+        ) : (
+          <IconButton
+            onClick={clickLike}
+            className={classes.button}
+            aria-label="Unlike"
+            color="secondary"
+          >
+            <FavoriteBorderIcon />
+          </IconButton>
+        )}{' '}
+        <span>{values.likes}</span>
+        <IconButton
+          className={classes.button}
+          aria-label="Comment"
+          color="secondary"
+        >
+          <CommentIcon />
+        </IconButton>{' '}
+        <span>{values.comments.length}</span>
+      </CardActions>
+      <Divider />
+      <Comments
+        postId={props.post._id}
+        comments={values.comments}
+        updateComments={updateComments}
+      />
+    </Card>
+  );
 }
 
-export default withStyles(styles)(Post);
+export default Post;

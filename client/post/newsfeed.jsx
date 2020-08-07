@@ -1,15 +1,14 @@
-/* eslint-disable react/no-access-state-in-setstate,react/prop-types */
-import React, { Component } from 'react';
+import React, { useEffect, useState } from 'react';
+import { makeStyles } from '@material-ui/styles';
 import Card from '@material-ui/core/Card';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
-import { withStyles } from '@material-ui/core/styles';
-import PostList from './postList';
-import auth from '../auth/auth-helper';
 import { listNewsFeed } from './api-post';
+import auth from '../auth/auth-helper';
 import NewPost from './newPost';
+import PostList from './postList';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   card: {
     margin: 'auto',
     paddingTop: 0,
@@ -25,19 +24,17 @@ const styles = (theme) => ({
   media: {
     minHeight: 330,
   },
-});
+}));
 
-class Newsfeed extends Component {
-  constructor(props) {
-    super(props);
+function Newsfeed() {
+  const classes = useStyles();
+  const [posts, setPosts] = useState([]);
+  const jwt = auth.isAuthenticated();
 
-    this.state = {
-      posts: [],
-    };
-  }
+  useEffect(() => {
+    const abortController = new AbortController();
+    const { signal } = abortController;
 
-  loadPosts = () => {
-    const jwt = auth.isAuthenticated();
     listNewsFeed(
       {
         userId: jwt.user._id,
@@ -45,55 +42,43 @@ class Newsfeed extends Component {
       {
         t: jwt.token,
       },
+      signal,
     ).then((data) => {
       if (data.error) {
         console.log(data.error);
       } else {
-        this.setState({ posts: data });
+        setPosts(data);
       }
     });
-  };
+    return function cleanup() {
+      abortController.abort();
+    };
+  }, []);
 
-  componentDidMount = () => {
-    this.loadPosts();
-  };
-
-  addPost = (post) => {
-    const updatedPosts = this.state.posts;
+  const addPost = (post) => {
+    const updatedPosts = [...posts];
     updatedPosts.unshift(post);
-    this.setState({ posts: updatedPosts });
+    setPosts(updatedPosts);
   };
 
-  removePost = (post) => {
-    const updatedPosts = this.state.posts;
+  const removePost = (post) => {
+    const updatedPosts = [...posts];
     const index = updatedPosts.indexOf(post);
     updatedPosts.splice(index, 1);
-    this.setState({ posts: updatedPosts });
+    setPosts(updatedPosts);
   };
 
-  render() {
-    const { classes } = this.props;
-
-    return (
-      <>
-        <Card className={classes.card}>
-          <Typography
-            type="title"
-            className={classes.title}
-          >
-            Newsfeed
-          </Typography>
-          <Divider />
-          <NewPost addUpdate={this.addPost} />
-          <Divider />
-          <PostList
-            removeUpdate={this.removePost}
-            posts={this.state.posts}
-          />
-        </Card>
-      </>
-    );
-  }
+  return (
+    <Card className={classes.card}>
+      <Typography type="title" className={classes.title}>
+        Newsfeed
+      </Typography>
+      <Divider />
+      <NewPost addUpdate={addPost} />
+      <Divider />
+      <PostList removeUpdate={removePost} posts={posts} />
+    </Card>
+  );
 }
 
-export default withStyles(styles)(Newsfeed);
+export default Newsfeed;
