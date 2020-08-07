@@ -24,6 +24,8 @@
     "array-callback-return": "off",
     "no-shadow": "off",
     "eqeqeq": "off",
+    "react/prop-types": "off",
+    "react/no-array-index-key": "off",
     "react/jsx-one-expression-per-line": "off"
   }
 }

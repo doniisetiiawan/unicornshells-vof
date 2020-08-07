@@ -1,17 +1,16 @@
-import PropTypes from 'prop-types';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { makeStyles } from '@material-ui/styles';
+import Grid from '@material-ui/core/Grid';
 import Card from '@material-ui/core/Card';
 import Typography from '@material-ui/core/Typography';
 import CardMedia from '@material-ui/core/CardMedia';
 import CardContent from '@material-ui/core/CardContent';
-import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
-import seashellImg from '../assets/images/seashell.jpg';
 import auth from '../auth/auth-helper';
-import FindPeople from '../user/findPeople';
+import seashellImg from '../assets/images/seashell.jpg';
 import Newsfeed from '../post/newsfeed';
+import FindPeople from '../user/findPeople';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
     margin: 30,
@@ -20,6 +19,7 @@ const styles = (theme) => ({
     maxWidth: 600,
     margin: 'auto',
     marginTop: theme.spacing(5),
+    marginBottom: theme.spacing(5),
   },
   title: {
     padding: `${theme.spacing(3)}px ${theme.spacing(
@@ -28,84 +28,87 @@ const styles = (theme) => ({
     color: theme.palette.text.secondary,
   },
   media: {
-    minHeight: 330,
+    minHeight: 400,
   },
-});
+  credit: {
+    padding: 10,
+    textAlign: 'right',
+    backgroundColor: '#ededed',
+    borderBottom: '1px solid #d0d0d0',
+    '& a': {
+      color: '#3f4771',
+    },
+  },
+}));
 
-class Home extends React.Component {
-  constructor(props) {
-    super(props);
+function Home({ history }) {
+  const classes = useStyles();
+  const [defaultPage, setDefaultPage] = useState(false);
 
-    this.state = {
-      defaultPage: true,
+  useEffect(() => {
+    setDefaultPage(auth.isAuthenticated());
+    const unlisten = history.listen(() => {
+      setDefaultPage(auth.isAuthenticated());
+    });
+    return () => {
+      unlisten();
     };
-  }
+  }, []);
 
-  init = () => {
-    if (auth.isAuthenticated()) {
-      this.setState({ defaultPage: false });
-    } else {
-      this.setState({ defaultPage: true });
-    }
-  };
-
-  // eslint-disable-next-line camelcase
-  UNSAFE_componentWillReceiveProps = () => {
-    this.init();
-  };
-
-  componentDidMount = () => {
-    this.init();
-  };
-
-  render() {
-    const { classes } = this.props;
-
-    return (
-      <div className={classes.root}>
-        {this.state.defaultPage && (
-          <Grid container spacing={1}>
-            <Grid item xs={12}>
-              <Card className={classes.card}>
-                <Typography
-                  type="headline"
-                  component="h2"
-                  className={classes.title}
+  return (
+    <div className={classes.root}>
+      {!defaultPage && (
+        <Grid container spacing={8}>
+          <Grid item xs={12}>
+            <Card className={classes.card}>
+              <Typography
+                variant="h6"
+                className={classes.title}
+              >
+                Home Page
+              </Typography>
+              <CardMedia
+                className={classes.media}
+                image={seashellImg}
+                title="Unicorn Bicycle"
+              />
+              <Typography
+                variant="body2"
+                component="p"
+                className={classes.credit}
+                color="textSecondary"
+              >
+                Photo by{' '}
+                <a
+                  href="https://unsplash.com/@boudewijn_huysmans"
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
-                  Home Page
+                  Boudewijn Huysmans
+                </a>{' '}
+                on Unsplash
+              </Typography>
+              <CardContent>
+                <Typography type="body1" component="p">
+                  Welcome to the MERN Social home page.
                 </Typography>
-                <CardMedia
-                  className={classes.media}
-                  image={seashellImg}
-                  title="Unicorn Shells"
-                />
-                <CardContent>
-                  <Typography type="body1" component="p">
-                    Welcome to the MERN Social home page.
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
+              </CardContent>
+            </Card>
           </Grid>
-        )}
-
-        {!this.state.defaultPage && (
-          <Grid container spacing={1}>
-            <Grid item xs={8} sm={7}>
-              <Newsfeed />
-            </Grid>
-            <Grid item xs={6} sm={5}>
-              <FindPeople />
-            </Grid>
+        </Grid>
+      )}
+      {defaultPage && (
+        <Grid container spacing={8}>
+          <Grid item xs={8} sm={7}>
+            <Newsfeed />
           </Grid>
-        )}
-      </div>
-    );
-  }
+          <Grid item xs={6} sm={5}>
+            <FindPeople />
+          </Grid>
+        </Grid>
+      )}
+    </div>
+  );
 }
 
-export default withStyles(styles)(Home);
-
-Home.propTypes = {
-  classes: PropTypes.objectOf(PropTypes.any).isRequired,
-};
+export default Home;

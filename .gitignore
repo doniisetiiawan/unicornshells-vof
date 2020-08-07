@@ -26,3 +26,5 @@ chrome-user-data
 dist/
 
 client/a.js
+
+client/t.js

@@ -2,7 +2,7 @@ import { signout } from './api-auth';
 
 const auth = {
   isAuthenticated() {
-    if (typeof window === 'undefined') return false;
+    if (typeof window == 'undefined') return false;
 
     if (sessionStorage.getItem('jwt')) return JSON.parse(sessionStorage.getItem('jwt'));
     return false;
@@ -11,7 +11,7 @@ const auth = {
     if (typeof window !== 'undefined') sessionStorage.setItem('jwt', JSON.stringify(jwt));
     cb();
   },
-  signout(cb) {
+  clearJWT(cb) {
     if (typeof window !== 'undefined') sessionStorage.removeItem('jwt');
     cb();
     // optional
