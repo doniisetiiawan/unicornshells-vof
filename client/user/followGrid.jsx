@@ -1,13 +1,12 @@
-/* eslint-disable react/prop-types,react/no-array-index-key */
 import React from 'react';
+import { makeStyles } from '@material-ui/styles';
 import GridList from '@material-ui/core/GridList';
 import GridListTile from '@material-ui/core/GridListTile';
 import { Link } from 'react-router-dom';
 import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
-import { withStyles } from '@material-ui/core/styles';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   root: {
     paddingTop: theme.spacing(2),
     display: 'flex',
@@ -29,10 +28,10 @@ const styles = (theme) => ({
     textAlign: 'center',
     marginTop: 10,
   },
-});
+}));
 
 function FollowGrid(props) {
-  const { classes } = props;
+  const classes = useStyles();
 
   return (
     <div className={classes.root}>
@@ -59,4 +58,4 @@ function FollowGrid(props) {
   );
 }
 
-export default withStyles(styles)(FollowGrid);
+export default FollowGrid;

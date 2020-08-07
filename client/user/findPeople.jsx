@@ -1,6 +1,5 @@
-/* eslint-disable react/no-access-state-in-setstate,react/prop-types,react/no-array-index-key */
-import React, { Component } from 'react';
-import Snackbar from '@material-ui/core/Snackbar';
+import React, { useEffect, useState } from 'react';
+import { makeStyles } from '@material-ui/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
@@ -11,21 +10,21 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { Link } from 'react-router-dom';
 import IconButton from '@material-ui/core/IconButton';
+import ViewIcon from '@material-ui/icons/Visibility';
 import Button from '@material-ui/core/Button';
-import { Pageview } from '@material-ui/icons';
-import { withStyles } from '@material-ui/core/styles';
-import { findPeople, follow } from './api-user';
+import Snackbar from '@material-ui/core/Snackbar';
 import auth from '../auth/auth-helper';
+import { findPeople, follow } from './api-user';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   root: theme.mixins.gutters({
-    padding: theme.spacing(),
+    padding: theme.spacing(1),
     margin: 0,
   }),
   title: {
-    margin: `${theme.spacing(
-      3,
-    )}px ${theme.spacing()}px ${theme.spacing(2)}px`,
+    margin: `${theme.spacing(3)}px ${theme.spacing(
+      1,
+    )}px ${theme.spacing(2)}px`,
     color: theme.palette.openTitle,
     fontSize: '1em',
   },
@@ -41,20 +40,21 @@ const styles = (theme) => ({
   viewButton: {
     verticalAlign: 'middle',
   },
-});
+}));
 
-class FindPeople extends Component {
-  constructor(props) {
-    super(props);
+function FindPeople() {
+  const classes = useStyles();
+  const [values, setValues] = useState({
+    users: [],
+    open: false,
+    followMessage: '',
+  });
+  const jwt = auth.isAuthenticated();
 
-    this.state = {
-      users: [],
-      open: false,
-    };
-  }
+  useEffect(() => {
+    const abortController = new AbortController();
+    const { signal } = abortController;
 
-  componentDidMount = () => {
-    const jwt = auth.isAuthenticated();
     findPeople(
       {
         userId: jwt.user._id,
@@ -62,17 +62,20 @@ class FindPeople extends Component {
       {
         t: jwt.token,
       },
+      signal,
     ).then((data) => {
-      if (data.error) {
+      if (data && data.error) {
         console.log(data.error);
       } else {
-        this.setState({ users: data });
+        setValues({ ...values, users: data });
       }
     });
-  };
+    return function cleanup() {
+      abortController.abort();
+    };
+  }, []);
 
-  clickFollow = (user, index) => {
-    const jwt = auth.isAuthenticated();
+  const clickFollow = (user, index) => {
     follow(
       {
         userId: jwt.user._id,
@@ -83,11 +86,12 @@ class FindPeople extends Component {
       user._id,
     ).then((data) => {
       if (data.error) {
-        this.setState({ error: data.error });
+        console.log(data.error);
       } else {
-        const toFollow = this.state.users;
+        const toFollow = values.users;
         toFollow.splice(index, 1);
-        this.setState({
+        setValues({
+          ...values,
           users: toFollow,
           open: true,
           followMessage: `Following ${user.name}!`,
@@ -96,73 +100,70 @@ class FindPeople extends Component {
     });
   };
 
-  render() {
-    const { classes } = this.props;
+  const handleRequestClose = () => {
+    setValues({ ...values, open: false });
+  };
 
-    return (
-      <>
-        <Paper className={classes.root} elevation={4}>
-          <Typography
-            type="title"
-            className={classes.title}
-          >
-            Who to follow
-          </Typography>
-          <List>
-            {this.state.users.map((item, i) => (
-              <span key={i}>
-                <ListItem>
-                  <ListItemAvatar
-                    className={classes.avatar}
-                  >
-                    <Avatar
-                      src={`/api/users/photo/${item._id}`}
-                    />
-                  </ListItemAvatar>
-                  <ListItemText primary={item.name} />
-                  <ListItemSecondaryAction
-                    className={classes.follow}
-                  >
-                    <Link to={`/user/${item._id}`}>
-                      <IconButton
-                        variant="raised"
-                        color="secondary"
-                        className={classes.viewButton}
-                      >
-                        <Pageview />
-                      </IconButton>
-                    </Link>
-                    <Button
-                      aria-label="Follow"
+  return (
+    <>
+      <Paper className={classes.root} elevation={4}>
+        <Typography type="title" className={classes.title}>
+          Who to follow
+        </Typography>
+        <List>
+          {values.users.map((item, i) => (
+            <span key={i}>
+              <ListItem>
+                <ListItemAvatar className={classes.avatar}>
+                  <Avatar
+                    src={`/api/users/photo/${item._id}`}
+                  />
+                </ListItemAvatar>
+                <ListItemText primary={item.name} />
+                <ListItemSecondaryAction
+                  className={classes.follow}
+                >
+                  <Link to={`/user/${item._id}`}>
+                    <IconButton
                       variant="contained"
-                      color="primary"
-                      onClick={() => this.clickFollow(item, i)}
+                      color="secondary"
+                      className={classes.viewButton}
                     >
-                      Follow
-                    </Button>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              </span>
-            ))}
-          </List>
-        </Paper>
-        <Snackbar
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
-          }}
-          open={this.state.open}
-          onClose={this.handleRequestClose}
-          autoHideDuration={6000}
-          message={(
-            <span className={classes.snack}>
-              {this.state.followMessage}
+                      <ViewIcon />
+                    </IconButton>
+                  </Link>
+                  <Button
+                    aria-label="Follow"
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      clickFollow(item, i);
+                    }}
+                  >
+                    Follow
+                  </Button>
+                </ListItemSecondaryAction>
+              </ListItem>
             </span>
-          )}
-        />
-      </>
-    );
-  }
+          ))}
+        </List>
+      </Paper>
+      <Snackbar
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        open={values.open}
+        onClose={handleRequestClose}
+        autoHideDuration={6000}
+        message={(
+          <span className={classes.snack}>
+            {values.followMessage}
+          </span>
+        )}
+      />
+    </>
+  );
 }
 
-export default withStyles(styles)(FindPeople);
+export default FindPeople;
